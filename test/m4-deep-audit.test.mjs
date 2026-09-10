@@ -17,7 +17,7 @@ function test(name, fn) {
 test('A1: resolvePreset({}) → threejs defaults (fallback when preset omitted)', () => {
   const r = resolvePreset({});
   assert.equal(r.axisUp,      'Y');
-  assert.equal(r.axisForward, 'Z');
+  assert.equal(r.axisForward, '-Z');
   assert.equal(r.unitScale,   1);
   assert.equal(r.bakeSpaceTransform, false);
 });

@@ -146,7 +146,8 @@ test('IB1: threejs preset → GlobalSettings UpAxis=Y, FrontAxis=Z', () => {
   assert.equal(gsProp(tree, 'UpAxis').props[4],    1);
   assert.equal(gsProp(tree, 'UpAxisSign').props[4], 1);
   assert.equal(gsProp(tree, 'FrontAxis').props[4],  2);
-  assert.equal(gsProp(tree, 'FrontAxisSign').props[4], -1);
+  // three.js es Y-up / -Z forward, igual que el default de Blender: FrontAxisSign = +1
+  assert.equal(gsProp(tree, 'FrontAxisSign').props[4], 1);
 });
 
 test('IB2: unreal preset → GlobalSettings UpAxis=Z, FrontAxis=X', () => {

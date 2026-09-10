@@ -1,0 +1,24 @@
+import { readFileSync } from 'node:fs';
+globalThis.self = globalThis;
+globalThis.window = { innerWidth: 1920, innerHeight: 1080, URL: globalThis.URL };
+const THREE = await import('three');
+THREE.ColorManagement.enabled = false;
+const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
+const GLB = String.raw`T:\Blender.3.6.23\_PersonajesETS2\Recepcionista\___________________Recepcionista-Accu-RIG__male-walk-2.glb`;
+const buf = readFileSync(GLB);
+const gltf = await new Promise((r, j) => new GLTFLoader().parse(buf.buffer.slice(buf.byteOffset, buf.byteOffset+buf.byteLength), '', r, j));
+const root = gltf.scene; root.updateMatrixWorld(true);
+const f = (a) => `[${[...a].map(x=>(+x).toFixed(4).padStart(8)).join(' ')}]`;
+const rows = (m) => [0,1,2,3].map(r => f([m.elements[r], m.elements[r+4], m.elements[r+8], m.elements[r+12]])).join('\n    ');
+let sm=null; root.traverse(o=>{ if(!sm&&o.isSkinnedMesh) sm=o; });
+console.log('mesh:', sm.name);
+console.log('  mesh.matrix (local):\n    ' + rows(sm.matrix));
+console.log('  mesh.matrixWorld:\n    ' + rows(sm.matrixWorld));
+const p=new THREE.Vector3(),q=new THREE.Quaternion(),s=new THREE.Vector3();
+sm.matrixWorld.decompose(p,q,s);
+const e=new THREE.Euler().setFromQuaternion(q);
+console.log('  decompose -> pos', f([p.x,p.y,p.z]), 'rotDeg', f([e.x,e.y,e.z].map(v=>v*180/Math.PI)), 'scale', f([s.x,s.y,s.z]));
+console.log('  bindMatrix:\n    ' + rows(sm.bindMatrix));
+console.log('\n  cadena de padres de la malla:');
+let n = sm; while (n) { const pp=new THREE.Vector3(),qq=new THREE.Quaternion(),ss=new THREE.Vector3(); n.matrix.decompose(pp,qq,ss); const ee=new THREE.Euler().setFromQuaternion(qq);
+  console.log(`    ${(n.name||n.type).padEnd(14)} pos ${f([pp.x,pp.y,pp.z])} rotDeg ${f([ee.x,ee.y,ee.z].map(v=>v*180/Math.PI))} scale ${f([ss.x,ss.y,ss.z])}`); n=n.parent; }

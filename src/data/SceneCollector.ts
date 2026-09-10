@@ -310,6 +310,22 @@ export function collectScene(input: any, settings: any = {}): any {
 
     const bindMatrix = skinnedMesh.bindMatrix;
 
+    // Puente del espacio de bind (donde operan los boneInverses) al espacio de la escena.
+    // El skinning de three.js es:
+    //   p_world = mesh.matrixWorld · bindMatrixInverse · (bone.matrixWorld · boneInverse) · bindMatrix · v
+    // El factor constante de la izquierda es el que faltaba: sin el, inv(boneInverse) solo
+    // es la matriz global de bind cuando bindMatrix === mesh.matrixWorld. Un glTF puede
+    // traer los inverse-bind en otro espacio (p.ej. Z-up) con bindMatrix = identidad, y
+    // entonces el rest pose sale en un espacio distinto al de las curvas de animacion.
+    // Cuando bindMatrix === mesh.matrixWorld esto es la identidad y no cambia nada.
+    // OJO: NO usar skinnedMesh.bindMatrixInverse. Con bindMode 'attached' (el valor por
+    // defecto, y el que deja GLTFLoader) three.js lo sobrescribe en cada updateMatrixWorld
+    // con inverse(matrixWorld) — SkinnedMesh.js:294 —, asi que matrixWorld · bindMatrixInverse
+    // seria la identidad siempre y esto no haria nada.
+    const bindToWorld = new Matrix4()
+      .copy(skinnedMesh.matrixWorld)
+      .multiply(new Matrix4().copy(skinnedMesh.bindMatrix).invert());
+
     const deformerUid = uids.get(skinDeformerKey(skinnedMesh.uuid, skinnedMesh.geometry.uuid));
     const bindPoseUid = uids.get(bindPoseKey(skinnedMesh.uuid, skinnedMesh.geometry.uuid));
     templates.register(deformerTemplate(settings)).users += 1;
@@ -319,7 +335,12 @@ export function collectScene(input: any, settings: any = {}): any {
     for (let i = 0; i < skeletonBones.length; i++) {
       const b = skeletonBones[i];
       if (b && !bindWorldByBone.has(b)) {
-        bindWorldByBone.set(b, new Matrix4().copy(boneInverses[i]).invert());
+        bindWorldByBone.set(
+          b,
+          new Matrix4()
+            .copy(bindToWorld)
+            .multiply(new Matrix4().copy(boneInverses[i]).invert()),
+        );
       }
     }
     for (const bone of skeletonBones) {
@@ -352,9 +373,17 @@ export function collectScene(input: any, settings: any = {}): any {
 
       const { indices, weights } = sliceBoneInfluences(skinnedMesh.geometry, i);
 
-      _tmpBoneWorld.copy(boneInverses[i]).invert();
+      // TransformLink = matriz global del hueso en la pose de bind, en espacio de ESCENA.
+      // Es bindToWorld · inv(boneInverses[i]), ya calculado en bindWorldByBone.
+      _tmpBoneWorld.copy(bindWorldByBone.get(bone));
 
-      _tmpClusterTransform.copy(boneInverses[i]).multiply(bindMatrix);
+      // Transform = inv(TransformLink) · (global de la malla en la pose de bind).
+      // Esa global es `bindMatrix` (el espacio en el que viven los vertices), NO
+      // mesh.matrixWorld: con bindMode 'attached' three.js cancela matrixWorld en el
+      // skinning. Blender coloca la malla con armadura en TransformLink·Transform, asi
+      // que los dos factores tienen que estar en el mismo espacio o la malla sale girada.
+      // Si bindToWorld es la identidad, esto vale boneInverse·bindMatrix, el valor de siempre.
+      _tmpClusterTransform.copy(_tmpBoneWorld).invert().multiply(bindMatrix);
 
       clusters.push({
         boneIdx: i,

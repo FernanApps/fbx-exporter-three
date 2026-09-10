@@ -1,0 +1,16 @@
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+globalThis.self = globalThis;
+globalThis.window = { innerWidth: 1920, innerHeight: 1080, URL: globalThis.URL };
+const THREE = await import('three'); THREE.ColorManagement.enabled = false;
+const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
+const { FBXExporter } = await import('../dist/FBXExporter.js');
+const GLB = String.raw`T:\Blender.3.6.23\_PersonajesETS2\Recepcionista\___________________Recepcionista-Accu-RIG__male-walk-2.glb`;
+const OUT = process.argv[2];
+const OPTS = JSON.parse(process.argv[3] ?? '{}');
+const buf = readFileSync(GLB);
+const g = await new Promise((r,j)=>new GLTFLoader().parse(buf.buffer.slice(buf.byteOffset,buf.byteOffset+buf.byteLength),'',r,j));
+const root = g.scene; root.animations = g.animations;
+const bytes = await new FBXExporter().parseAsync(root, { preset:'blender', embedTextures:false, ...OPTS });
+mkdirSync(OUT.replace(/[\/][^\/]+$/,''), { recursive:true });
+writeFileSync(OUT, bytes);
+console.log('escrito', OUT, bytes.length, 'bytes  opts=', JSON.stringify(OPTS));

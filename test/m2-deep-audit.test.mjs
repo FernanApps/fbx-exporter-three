@@ -222,7 +222,7 @@ function axisIntegers(globalSettings) {
   return out;
 }
 
-test('M1: default axes (axisUp=Y, axisForward=Z) → canonical encoding', () => {
+test('M1: default axes (axisUp=Y, axisForward=-Z) → canonical encoding', () => {
   const bytes = exportSimpleScene();
   const tree = parseFBXTree(bytes);
   const gs = findRoot(tree, 'GlobalSettings');
@@ -230,9 +230,9 @@ test('M1: default axes (axisUp=Y, axisForward=Z) → canonical encoding', () => 
   assert.equal(axes.UpAxis, 1);
   assert.equal(axes.UpAxisSign, 1);
   assert.equal(axes.FrontAxis, 2);
-  assert.equal(axes.FrontAxisSign, -1);
+  assert.equal(axes.FrontAxisSign, 1);
   assert.equal(axes.CoordAxis, 0);
-  assert.equal(axes.CoordAxisSign, -1);
+  assert.equal(axes.CoordAxisSign, 1);
 });
 
 test('M2: GlobalSettings.Version = 1000', () => {

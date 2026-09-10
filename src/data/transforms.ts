@@ -56,11 +56,11 @@ import { Matrix4 } from 'three';
  *   opt-in for the narrow "single mesh, no transforms" Unreal asset case.
  */
 export const PRESETS = {
-  threejs: { axisUp: 'Y', axisForward: 'Z', unitScale: 1,   bakeSpaceTransform: false },
-  unity:   { axisUp: 'Y', axisForward: 'Z', unitScale: 1,   bakeSpaceTransform: false },
+  threejs: { axisUp: 'Y', axisForward: '-Z', unitScale: 1,   bakeSpaceTransform: false },
+  unity:   { axisUp: 'Y', axisForward: '-Z', unitScale: 1,   bakeSpaceTransform: false },
   unreal:  { axisUp: 'Z', axisForward: 'X', unitScale: 1,   bakeSpaceTransform: false },
-  blender: { axisUp: 'Y', axisForward: 'Z', unitScale: 100, bakeSpaceTransform: false },
-  maya:    { axisUp: 'Y', axisForward: 'Z', unitScale: 100, bakeSpaceTransform: false },
+  blender: { axisUp: 'Y', axisForward: '-Z', unitScale: 100, bakeSpaceTransform: false },
+  maya:    { axisUp: 'Y', axisForward: '-Z', unitScale: 100, bakeSpaceTransform: false },
 };
 
 /**
