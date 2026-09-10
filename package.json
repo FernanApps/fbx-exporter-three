@@ -48,7 +48,8 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx test/m1-binary-layer.test.mjs && node --import tsx test/m1-fbxloader-binary.test.mjs && node --import tsx test/m1-deep-audit.test.mjs && node --import tsx test/m2-integration.test.mjs && node --import tsx test/m2-deep-audit.test.mjs && node --import tsx test/m3-mesh-roundtrip.test.mjs && node --import tsx test/m3-edge-cases.test.mjs && node --import tsx test/m3-deep-audit.test.mjs && node --import tsx test/m3-multiuv.test.mjs && node --import tsx test/m5-skinning.test.mjs && node --import tsx test/m5-deep-audit.test.mjs && node --import tsx test/m5-bindpose-recovery.test.mjs && node --import tsx test/m6-animation.test.mjs && node --import tsx test/m6-deep-audit.test.mjs && node --import tsx test/m7-morph.test.mjs && node --import tsx test/m7-deep-audit.test.mjs && node --import tsx test/m8-light-camera.test.mjs && node --import tsx test/m8-deep-audit.test.mjs && node --import tsx test/m9-texture.test.mjs && node --import tsx test/m9-deep-audit.test.mjs && node --import tsx test/m4-axis-units.test.mjs && node --import tsx test/m4-deep-audit.test.mjs && node --import tsx test/m4-light-camera-direction.test.mjs && node --import tsx test/m9-slot-roundtrip.test.mjs && node --import tsx test/options.test.mjs",
-    "prepublishOnly": "npm run typecheck && npm run build && npm test"
+    "prepublishOnly": "npm run typecheck && npm run build && npm test",
+    "bundle": "npm run build && esbuild bundle/entry.js --bundle --format=iife --global-name=FBXExporterLib --alias:three=./bundle/three-global.js --minify --footer:js=globalThis.FBXExporterLib=FBXExporterLib; --outfile=bundle/fbx-exporter.global.js"
   },
   "peerDependencies": {
     "three": ">=0.160.0",
@@ -67,7 +68,8 @@
     "@types/three": "^0.184.1",
     "three": "^0.184.0",
     "tsx": "^4.22.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "esbuild": "^0.28.2"
   },
   "files": [
     "dist",
